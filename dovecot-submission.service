@@ -1,0 +1,12 @@
+[Unit]
+Description=Only allow dovecot users to access mail submission port
+Requires=dovecot.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=BIN_DIR/dovecot-submission
+# Give a reasonable amount of time to start up/shut down
+TimeoutSec = 10
+Restart = on-failure
+RestartSec = 2
