@@ -13,5 +13,5 @@ install:
 		echo "must install as root"; \
 	fi
 	install ${NAME}.py ${BIN_DIR}
-	umask 0133 && sed 's:BIN_DIR:${BINDIR}:' < ${NAME}.service > ${SYSTEMD_DIR}/${NAME}.service
+	umask 0133 && sed 's:BIN_DIR:${BIN_DIR}:' < ${NAME}.service > ${SYSTEMD_DIR}/${NAME}.service
 	./dovecot-zone.sh
