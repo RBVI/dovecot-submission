@@ -9,9 +9,16 @@ prereqs:
 
 install:
 	# run as root
-	if [ $(id -u) != 0 ]; then \
+	if [ $$(id -u) != 0 ]; then \
 		echo "must install as root"; \
+	else \
+		install ${NAME}.py ${BIN_DIR}/${NAME}; \
+		umask 0133 && sed 's:BIN_DIR:${BIN_DIR}:' < ${NAME}.service > ${SYSTEMD_DIR}/${NAME}.service; \
+		./dovecot-zone.sh; \
 	fi
-	install ${NAME}.py ${BIN_DIR}
-	umask 0133 && sed 's:BIN_DIR:${BIN_DIR}:' < ${NAME}.service > ${SYSTEMD_DIR}/${NAME}.service
-	./dovecot-zone.sh
+
+#
+# Example pcs resource creation
+#
+pcs-install:
+	pcs resource create Mail-submission systemd:dovecot-submission --group Mail --after Mail-Dovecot

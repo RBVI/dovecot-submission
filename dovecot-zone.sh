@@ -5,8 +5,7 @@
 #
 ZONE=dovecot
 IPSET=$ZONE
-#PORT=587/tcp
-PORT=9999/tcp
+PORT=587/tcp
 
 FWC='firewall-cmd --permanent'
 #echo "Removing $ZONE zone and $ZONE ipset if already there"

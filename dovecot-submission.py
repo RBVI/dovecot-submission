@@ -97,7 +97,8 @@ def make_zone_if_needed(fw):
 
 def flush_zone(fw):
     # remove all entries from ipset
-    fw.setEntires(ZONE_NAME, [])
+    return  # TODO: fix 'dbus.exceptions.DBusException: org.fedoraproject.FirewallD1.Exception: pop from empty list'
+    fw.setEntries(ZONE_NAME, [])
 
 
 def handler_stop_signals(signum, frame):
@@ -117,6 +118,7 @@ def main():
     atexit.register(lambda fw=fw: flush_zone(fw))
 
     if not service_is_active("dovecot"):
+        print("dovecot is not running", file=sys.stderr)
         raise SystemExit(os.EX_OK)
 
     signal.signal(signal.SIGINT, handler_stop_signals)
