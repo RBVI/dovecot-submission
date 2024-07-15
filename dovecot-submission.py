@@ -5,7 +5,6 @@
 # See README.md for details
 #
 
-import atexit
 import firewall.client
 from ipaddress import ip_address, ip_network
 import os
@@ -24,10 +23,12 @@ SUBMISSION_PORT = "587"
 WHO_IPS = re.compile(r'\((?P<ips>[0-9. ]*)\)\s*$')
 
 run = True
-processing_interval = 30  # seconds
+in_sleep = False
+processing_interval = DEFAULT_PROCESSING_INTERVAL
 
 
 def read_doveadm_who():
+    # TODO? use dovecot API to directly query dovecot/anvil
     try:
         text = subprocess.check_output(
             ["/bin/doveadm", "who"],
@@ -47,7 +48,7 @@ def read_doveadm_who():
 
 def find_local_sources(fw):
     # Scan firewalld zones for ones that allow connections to submission port
-    # and save those sources.
+    # and save their sources to exclude from ipset.
     networks = [ip_network(LOCAL_NETWORK)]
     zones = fw.getActiveZones()
     for zone in zones:
@@ -95,27 +96,24 @@ def make_zone_if_needed(fw):
     return
 
 
-def flush_zone(fw):
-    # remove all entries from ipset
-    return  # TODO: fix 'dbus.exceptions.DBusException: org.fedoraproject.FirewallD1.Exception: pop from empty list'
-    fw.setEntries(ZONE_NAME, [])
-
-
 def handler_stop_signals(signum, frame):
     global run
     global processing_interval
     run = False
     processing_interval = 0
+    if in_sleep:
+        raise SystemExit(signum)
 
 
 def main():
+    global in_sleep
+
     if not service_is_active("firewalld"):
         print("firewall deamon is not running", file=sys.stderr)
         raise SystemExit(os.EX_TEMPFAIL)
 
     fw = firewall.client.FirewallClient()
     # TODO: make_zone_if_needed(fw)
-    atexit.register(lambda fw=fw: flush_zone(fw))
 
     if not service_is_active("dovecot"):
         print("dovecot is not running", file=sys.stderr)
@@ -140,7 +138,9 @@ def main():
             if new_ips:
                 add_ips_to_ipset(fw, new_ips, local_sources)
                 current_ips = dovecot_ips
+        in_sleep = True
         time.sleep(processing_interval)
+        in_sleep = False
 
 
 if __name__ == "__main__":

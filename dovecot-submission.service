@@ -7,7 +7,7 @@ Type=simple
 User=root
 ExecStart=BIN_DIR/dovecot-submission
 # Set timeout to processing interval
-TimeoutSec = 30
+TimeoutSec = 5
 Restart = on-failure
 RestartSec = 2
 
