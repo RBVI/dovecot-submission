@@ -137,7 +137,7 @@ def main():
             new_ips = dovecot_ips - current_ips
             if new_ips:
                 add_ips_to_ipset(fw, new_ips, local_sources)
-                current_ips = dovecot_ips
+                current_ips.update(new_ips)
         in_sleep = True
         time.sleep(processing_interval)
         in_sleep = False
