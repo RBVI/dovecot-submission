@@ -52,9 +52,6 @@ def find_local_sources(fw):
     networks = [ip_network(LOCAL_NETWORK)]
     zones = fw.getActiveZones()
     for zone in zones:
-        if zone == ZONE_NAME:
-            # Don't include zone we're manipulating
-            continue
         settings = fw.getZoneSettings(zone)
         if settings.getTarget() == "ACCEPT":
             has_submission = True
@@ -64,7 +61,8 @@ def find_local_sources(fw):
         if not has_submission:
             continue
         for src in settings.getSources():
-            networks.append(ip_network(src))
+            if src[0].isdigit():
+                networks.append(ip_network(src))
     return networks
 
 
